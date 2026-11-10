@@ -20,6 +20,7 @@ RT='http://schemas.openxmlformats.org/officeDocument/2006/relationships/'
 def rels(*rs): return H+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+''.join(f'<Relationship Id="{i}" Type="{t}" Target="{g}"/>' for i,t,g in rs)+'</Relationships>'
 CT='application/vnd.openxmlformats-officedocument.'
 tree='<p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/></p:spTree></p:cSld>'
+blank_tree=tree.replace("<p:cSld>", '<p:cSld name="Blank">')  # outside the f-string: backslashes there need Python 3.12
 sf='<a:solidFill><a:schemeClr val="phClr"/></a:solidFill>'
 ln='<a:ln w="9525"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln>'
 cs=''.join(f'<a:{n}><a:srgbClr val="{v}"/></a:{n}>' for n,v in [('dk1','000000'),('lt1','FFFFFF'),('dk2','1F2937'),('lt2','EEEEEE'),('accent1','1565C0'),('accent2','EF6C00'),('accent3','2E7D32'),('accent4','6A1B9A'),('accent5','00838F'),('accent6','C62828'),('hlink','1565C0'),('folHlink','6A1B9A')])
@@ -31,7 +32,7 @@ files={
 'ppt/_rels/presentation.xml.rels':rels(('rId1',RT+'slideMaster','slideMasters/slideMaster1.xml'),('rId2',RT+'theme','theme/theme1.xml'),('rId3',RT+'slide','slides/slide1.xml')),
 'ppt/slideMasters/slideMaster1.xml':H+f'<p:sldMaster {A} {R} {P}>{tree}<p:clrMap bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/><p:sldLayoutIdLst><p:sldLayoutId id="2147483649" r:id="rId1"/></p:sldLayoutIdLst></p:sldMaster>',
 'ppt/slideMasters/_rels/slideMaster1.xml.rels':rels(('rId1',RT+'slideLayout','../slideLayouts/slideLayout1.xml'),('rId2',RT+'theme','../theme/theme1.xml')),
-'ppt/slideLayouts/slideLayout1.xml':H+f'<p:sldLayout {A} {R} {P} type="blank">{tree.replace("<p:cSld>","<p:cSld name=\"Blank\">")}<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sldLayout>',
+'ppt/slideLayouts/slideLayout1.xml':H+f'<p:sldLayout {A} {R} {P} type="blank">{blank_tree}<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sldLayout>',
 'ppt/slideLayouts/_rels/slideLayout1.xml.rels':rels(('rId1',RT+'slideMaster','../slideMasters/slideMaster1.xml')),
 'ppt/slides/slide1.xml':H+f'<p:sld {A} {R} {P}>{tree}<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>',
 'ppt/slides/_rels/slide1.xml.rels':rels(('rId1',RT+'slideLayout','../slideLayouts/slideLayout1.xml')),

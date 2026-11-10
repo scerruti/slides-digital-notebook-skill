@@ -101,15 +101,39 @@ python scripts/notebook.py pages spec.json --section post --count 3 --index <sli
 
 This makes copies of the template (IDs like `nb_post_1`), nudges the section's tab out, un-skips the copies and moves them to `--index`. Put them right after that section's divider or its last page. Copying is the whole trick: a copy carries the full tab strip with working links. A blank "New slide" has no tabs. Use `--start` to keep IDs unique when adding to a section that already has pages. With `--deck` (a fresh read with `revisionId,pageSize,slides.objectId`), the script first checks that the template exists and the new IDs are free, and suggests the right `--start` if not.
 
-Then fill the pages with the normal Slides tools, for example `slides_helper.py build` with `"existing": true`. Keep everything inside the **safe area the skeleton command prints** (x from 0.5 in to about W - 0.75 in). Anything reaching into the right-hand strip sits on top of the tabs and blocks clicks.
+Then fill the pages with the normal Slides tools, for example `slides_helper.py build` with `"existing": true`. Pass it **`--page 7.5x10`** (or the deck's real size): it assumes a 10 x 5.625 in landscape page otherwise, and its off-page and text-fit warnings are then wrong. Keep everything inside the **safe area the skeleton command prints** (x from 0.5 in to about W - 0.75 in). Anything reaching into the right-hand strip sits on top of the tabs and blocks clicks.
+
+**When a page's content doesn't fit**, don't shrink the text below the helper's minimum or let it run off the page. Split it: make another page in the section (`pages --count 1 --start <next>`) and move the rest there, with the same heading plus "(continued)" or a more specific one. The helper's "text likely needs ~X in of height" warning is the signal. Confirm with a thumbnail of the page.
+
+#### Images and screenshots
+
+Many guides are mostly screenshots. Slides `createImage` fetches the image from a URL **once, at insertion**, and keeps its own copy, so the source can go away afterwards. The URL must:
+- be reachable **without signing in** (a domain-only or "restricted" Drive link fails, because the fetch isn't signed in)
+- return the image itself, not a viewer page
+- point to a PNG, JPEG or GIF under 50 MB and 25 megapixels, with a URL under 2 KB
+
+Place each image with the script, which boxes it inside the safe area. Slides scales the image to fit the box and keeps its aspect ratio, so a tall phone screenshot is limited by the height and centered:
+
+```
+python scripts/notebook.py image spec.json --page nb_post_2 --id nb_post_2_img1 --url <URL> --y 1.6 [--h 5] --deck read.json --revision <revisionId>
+```
+
+Put the text above (or below) at a `y` that leaves the image room, and check a thumbnail. Name the image after its page (`<page>_img1`); never end an ID in `_t<number>`, which is how `check` spots tabs.
+
+**Images that aren't on a public site yet: temporary Drive hosting.** Ask the user before changing any sharing.
+1. The user drags the images into one Drive folder. That avoids passing dozens of screenshots through the conversation as base64.
+2. Note each file's current sharing, then set the files to "Anyone with the link can view". Workspace domains often block this. If they do, stop and say so; the user has to host the images somewhere public instead, or insert them by hand (Insert > Image > Drive works signed in).
+3. Insert **one** image first with `https://drive.google.com/uc?export=download&id=<fileId>`. If that fails, try `https://drive.google.com/thumbnail?id=<fileId>&sz=w1600`. Neither form is documented by Google, so test before doing the rest, and stop if neither works.
+4. Insert the rest the same way, then check the thumbnails.
+5. Put each file's sharing back the way it was, or trash the files if the user agrees. The deck keeps its copies either way.
 
 Cover page (slide 1): the title, an "Updated <month year>" line and the logo. It needs no tabs. A short "How to use this guide" line helps: click a tab to jump; click underlined text to open it.
 
 ### 4. Check
 
-Read the deck again with `revisionId,pageSize,slides(objectId,pageElements(objectId,size,transform,shape(shapeProperties.link)))`, save it, and run:
+Read the deck again with `revisionId,pageSize,slides(objectId,slideProperties.isSkipped,pageElements(objectId,size,transform,shape(shapeProperties.link),elementGroup))`, save it, and run:
 
-(The Slides connector accepts this parenthesized mask, unlike Sheets. The flat form, `slides.pageElements.objectId,slides.pageElements.size,...`, works too. On a large deck the result is too big to show inline, so save it to a file rather than reading it.)
+(The Slides connector accepts this parenthesized mask, unlike Sheets. The flat form, `slides.pageElements.objectId,slides.pageElements.size,...`, works too. On a large deck the result is too big to show inline, so save it to a file rather than reading it. `isSkipped` lets the check tell hidden pages from real ones; `elementGroup` lets it see grouped elements.)
 
 ```
 python scripts/notebook.py check spec.json read.json
@@ -117,10 +141,13 @@ python scripts/notebook.py check spec.json read.json
 
 It reports:
 - pages with missing tabs, or no tab strip at all
-- tabs linking to deleted pages
-- elements that cover the tab strip
+- tabs linking to deleted pages, or to the wrong section
+- anything drawn on top of a tab, rotated and grouped elements included (a background sent behind the strip is fine)
+- pages that are skipped, so readers never see them
 - tab colors whose labels fall below 4.5:1 contrast
 - a landscape page
+
+A contents list on the cover that links to dividers is fine; only shapes in the right-hand strip count as tabs.
 
 Fix everything it reports, then look at one rendered divider and one content page (`read_slide_page_thumbnail`) before telling the user it's done.
 
@@ -131,7 +158,7 @@ Fix everything it reports, then look at one rendered divider and one content pag
 
 ## Working on an existing notebook someone else built
 
-Read it, then infer the spec from the tab shapes: their labels, colors and link targets. If its IDs don't follow this script's naming, don't force them to. Add pages by copying one of its own content pages with `duplicateObject`, after its link targets exist, then move the copy's active tab. Use `check` only when its tab IDs follow the `<page>_t<k>` pattern. Otherwise compare the link targets on each page yourself.
+Read it, then infer the spec from the tab shapes: their labels, colors and link targets. If its IDs don't follow this script's naming, don't force them to. Add pages by copying one of its own content pages with `duplicateObject`, after its link targets exist, then move the copy's active tab. `check` finds hand-made tabs by their position in the right-hand strip, but it needs the dividers to be named `<prefix>_div_<tab id>`. When they aren't, compare the link targets on each page yourself.
 
 ## Writing instructions for a team
 
