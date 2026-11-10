@@ -12,7 +12,6 @@ ap.add_argument("out"); ap.add_argument("--width", type=float, default=7.5); ap.
 ap.add_argument("--b64", help="also write the file base64-encoded here, ready for base64Content")
 a = ap.parse_args()
 PW, PH = int(round(a.width * 914400)), int(round(a.height * 914400))
-import zipfile
 A='xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"'
 R='xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"'
 P='xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"'

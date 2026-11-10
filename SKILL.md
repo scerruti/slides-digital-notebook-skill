@@ -96,10 +96,10 @@ The order is there because of how Google behaves. A slide copied while one of it
 ### 3. Content pages
 
 ```
-python scripts/notebook.py pages spec.json --section post --count 3 --index <slide index> [--start 1] --revision <revisionId>
+python scripts/notebook.py pages spec.json --section post --count 3 --index <slide index> [--start 1] --revision <revisionId> --deck read.json
 ```
 
-This makes copies of the template (IDs like `nb_post_1`), nudges the section's tab out, un-skips the copies and moves them to `--index`. Put them right after that section's divider or its last page. Copying is the whole trick: a copy carries the full tab strip with working links. A blank "New slide" has no tabs. Use `--start` to keep IDs unique when adding to a section that already has pages.
+This makes copies of the template (IDs like `nb_post_1`), nudges the section's tab out, un-skips the copies and moves them to `--index`. Put them right after that section's divider or its last page. Copying is the whole trick: a copy carries the full tab strip with working links. A blank "New slide" has no tabs. Use `--start` to keep IDs unique when adding to a section that already has pages. With `--deck` (a fresh read with `revisionId,pageSize,slides.objectId`), the script first checks that the template exists and the new IDs are free, and suggests the right `--start` if not.
 
 Then fill the pages with the normal Slides tools, for example `slides_helper.py build` with `"existing": true`. Keep everything inside the **safe area the skeleton command prints** (x from 0.5 in to about W - 0.75 in). Anything reaching into the right-hand strip sits on top of the tabs and blocks clicks.
 
@@ -108,6 +108,8 @@ Cover page (slide 1): the title, an "Updated <month year>" line and the logo. It
 ### 4. Check
 
 Read the deck again with `revisionId,pageSize,slides(objectId,pageElements(objectId,size,transform,shape(shapeProperties.link)))`, save it, and run:
+
+(The Slides connector accepts this parenthesized mask, unlike Sheets. The flat form, `slides.pageElements.objectId,slides.pageElements.size,...`, works too. On a large deck the result is too big to show inline, so save it to a file rather than reading it.)
 
 ```
 python scripts/notebook.py check spec.json read.json

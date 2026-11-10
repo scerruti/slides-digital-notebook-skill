@@ -3,8 +3,9 @@
 
 Commands (each prints a compact JSON body for update_presentation, or a report):
   skeleton SPEC --revision REV [--deck READ.json]   template page + one divider per tab, all tabs linked
-  pages    SPEC --section ID --count N --revision REV [--deck READ.json] [--after SLIDE_ID]
-                                                     new content pages for a section (copies of the template)
+  pages    SPEC --section ID --count N --revision REV [--index N] [--start N] [--deck READ.json]
+                                                     new content pages for a section (copies of the template);
+                                                     --deck checks the template, divider and new IDs first
   check    SPEC READ.json                            report missing/broken tabs, blocked strips, contrast
 
 SPEC (JSON):
@@ -115,7 +116,20 @@ def cmd_skeleton(a):
 
 def cmd_pages(a):
     s = load_spec(a.spec); I = ids(s); tpl = I['tpl']
-    k = [t['id'] for t in s['tabs']].index(a.section)
+    tab_ids = [t['id'] for t in s['tabs']]
+    if a.section not in tab_ids: sys.exit(f"section {a.section!r} is not a tab in the spec ({', '.join(tab_ids)})")
+    k = tab_ids.index(a.section)
+    if a.deck:
+        # catch the usual failures here, with a clear message, instead of as a rejected batch
+        d = json.load(open(a.deck)); d = d.get('content', d)
+        have = {x['objectId'] for x in d.get('slides', [])}
+        if not have: sys.exit("--deck: the read has no slides.objectId; read with revisionId,pageSize,slides.objectId")
+        if tpl not in have: sys.exit(f"template {tpl} is not in the deck; run skeleton first (or check the spec's prefix)")
+        if I['div'](a.section) not in have: print(f"warning: divider {I['div'](a.section)} is not in the deck", file=sys.stderr)
+        taken = [f"{s['prefix']}_{a.section}_{a.start + i}" for i in range(a.count) if f"{s['prefix']}_{a.section}_{a.start + i}" in have]
+        if taken:
+            n = max(int(m.group(1)) for x in have if (m := re.fullmatch(rf"{re.escape(s['prefix'])}_{re.escape(a.section)}_(\d+)", x)))
+            sys.exit(f"page IDs already in the deck: {', '.join(taken)}; use --start {n + 1}")
     r = []; new = []
     for i in reversed(range(a.count)):
         p = f"{s['prefix']}_{a.section}_{a.start + i}"; new.insert(0, p)
@@ -160,6 +174,6 @@ def cmd_check(a):
 ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 sub = ap.add_subparsers(dest='cmd', required=True)
 p = sub.add_parser('skeleton'); p.add_argument('spec'); p.add_argument('--revision'); p.add_argument('--deck'); p.add_argument('--index', type=int, default=1, help='where the first divider goes (default 1, after the cover)')
-p = sub.add_parser('pages'); p.add_argument('spec'); p.add_argument('--section', required=True); p.add_argument('--count', type=int, default=1); p.add_argument('--start', type=int, default=1, help='first page number for IDs'); p.add_argument('--index', type=int, help='slide index for the new pages'); p.add_argument('--revision'); p.add_argument('--deck')
+p = sub.add_parser('pages'); p.add_argument('spec'); p.add_argument('--section', required=True); p.add_argument('--count', type=int, default=1); p.add_argument('--start', type=int, default=1, help='first page number for IDs'); p.add_argument('--index', type=int, help='slide index for the new pages'); p.add_argument('--revision'); p.add_argument('--deck', help='a read with slides.objectId; checks the template, divider and new IDs before writing')
 p = sub.add_parser('check'); p.add_argument('spec'); p.add_argument('read')
 a = ap.parse_args(); {"skeleton": cmd_skeleton, "pages": cmd_pages, "check": cmd_check}[a.cmd](a)
