@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: extends-existing-notebook
+expected_outcome: |
+  Needs a fixture: a copy of a notebook deck built by this skill (prefix emp; cover, Posting/Applicants/FAQ
+  dividers and one content page each; skipped template emp_tpl). Replace {DECK_URL} with the copy's link.
+  The run adds exactly one page, "Message applicants", right after the "Review applicants" page and before
+  the FAQ divider, carrying the three tabs linked to the existing dividers with the Applicants tab
+  standing out, and the given text. Nothing else in the deck changes.

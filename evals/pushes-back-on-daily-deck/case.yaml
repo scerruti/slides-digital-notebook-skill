@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: pushes-back-on-daily-deck
+expected_outcome: |
+  Explains that a tabbed notebook is a poor fit for a deck that grows every day (tabs and links need
+  maintaining for every new page, a rolling set of date tabs never stays current, tabs get covered by
+  full-slide content), and recommends lighter options such as a linked index or calendar slide, a script
+  that rebuilds the index, splitting old years out, or a clear start/end marker for each lesson.

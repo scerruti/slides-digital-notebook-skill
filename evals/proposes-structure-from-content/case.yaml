@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: proposes-structure-from-content
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  Reads every draft, then proposes one notebook per audience (employer, scholar, later school admin)
+  with a tab-to-pages-to-source mapping built from the writer's own files, at most 8 tabs each.
+  Flags the long employer getting-started page for splitting, the duplicated contacts page as shared
+  content, and gaps like the missing background-check link. Builds nothing and doesn't demand the writer
+  restructure their files. Asks for approval before building.

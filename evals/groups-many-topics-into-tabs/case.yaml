@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: groups-many-topics-into-tabs
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  One school-admin notebook (it's a single audience) with at most 8 tabs. The 12 topic files are grouped
+  under tabs (e.g. Getting started = what is Starteryou + account + staff; Scholars = approve + bulk import),
+  with every topic placed and none dropped, shown as a tab-to-pages-to-source mapping. Asks which Google
+  account should own the published link, builds nothing, and asks for approval.

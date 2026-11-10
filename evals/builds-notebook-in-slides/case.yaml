@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: builds-notebook-in-slides
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  A new Google Slides deck with a cover, three divider pages and three content pages. Every page except
+  the cover carries three tabs on the right edge (Posting blue, Applicants orange, FAQ green), each linked
+  to its divider; the current section's tab stands out; nothing covers the tabs. Content pages carry the
+  drafts' text. The reply gives the link and says the user must set portrait page size if not done,
+  publish to the web, and click-test the tabs.
